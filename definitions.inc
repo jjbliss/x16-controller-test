@@ -14,6 +14,10 @@ Z3 = $04
 Z4 = $05
 Z5 = $06
 
+;32-bit data
+M0 = $30 ; 31, 33, 34
+M1 = $35 ; 36, 37, 38
+
 ;Sprite RAM locations
 X_POS = $10 ; also includes two extra bits from $11
 Y_POS = $12 ; also includes two extra bits from $13

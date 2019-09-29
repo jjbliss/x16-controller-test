@@ -60,8 +60,18 @@ irq_handler:
 	and #1 ;check that vsync bit is set
 	beq .vsync_end ; if vsync bit not set, skip to end
 	jsr GETJOY
-	jsr write_controls1
-	jsr write_controls2
+
+	+SYS_ZERO M0, 4
+
+	+SYS_COPY JOY1, M0, 3
+	lda #1
+	sta Z0
+	jsr write_controls
+	+SYS_COPY JOY2, M0, 3
+	lda #2
+	sta Z0
+	jsr write_controls
+
 	jsr write_x_pos
 	jsr write_y_pos
 	jsr write_x_pos2
@@ -227,108 +237,46 @@ write_y_pos2:
 ;   This will write out the current status of
 ;		JOY1 to the second line of the screen
 ;-------------------------------------------------
-; INPUTS: (none)
+; INPUTS:	M0 - joystatus
+;			Z0 - line number
 ;
 ;-------------------------------------------------
-; MODIFIES: X
+; MODIFIES: Z1, x, Z5
 ;
-write_controls1:
+write_controls:
 	pha
-	lda #1
+	lda Z0
 	jsr printonline
-	lda #$80
-	sta Z5
-wc0:
-	lda JOY1
-	ldx #"1"
-	AND Z5
-	bne wc1
-	ldx #"0"
-wc1:
-	txa
-	sta VERA_data
-	lsr Z5
-	bcc wc0
-wce:
-	lda #$80
-	sta Z5
-wc0h:
-	lda JOY1+1
-	ldx #"1"
-	AND Z5
-	bne wc1h
-	ldx #"0"
-wc1h:
-	txa
-	sta VERA_data
-	lsr Z5
-	bcc wc0h
-wceh:
-	lda #$80
-	sta Z5
-wc0b:
-	lda JOY1+2
-	ldx #"1"
-	AND Z5
-	bne wc1b
-	ldx #"0"
-wc1b:
-	txa
-	sta VERA_data
-	lsr Z5
-	bcc wc0b
-wceb:
+	lda M0
+	sta Z1
+	jsr write_bits_in_Z1
+	lda M0+1
+	sta Z1
+	jsr write_bits_in_Z1
+	lda M0+2
+	sta Z1
+	jsr write_bits_in_Z1
 	pla
  	rts
 
-write_controls2:
-	pha
-	lda #2
-	jsr printonline
+
+write_bits_in_Z1:
 	lda #$80
 	sta Z5
-wc20:
-	lda JOY2
+wbiz0:
+	lda Z1
 	ldx #"1"
 	AND Z5
-	bne wc21
+	bne wbiz1
 	ldx #"0"
-wc21:
+wbiz1:
 	txa
 	sta VERA_data
 	lsr Z5
-	bcc wc20
-wc2e:
-	lda #$80
-	sta Z5
-wc20h:
-	lda JOY2+1
-	ldx #"1"
-	AND Z5
-	bne wc21h
-	ldx #"0"
-wc21h:
-	txa
-	sta VERA_data
-	lsr Z5
-	bcc wc20h
-wc2eh:
-	lda #$80
-	sta Z5
-wc20b:
-	lda JOY2+2
-	ldx #"1"
-	AND Z5
-	bne wc21b
-	ldx #"0"
-wc21b:
-	txa
-	sta VERA_data
-	lsr Z5
-	bcc wc20b
-wc2eb:
-	pla
- 	rts
+	bcc wbiz0
+wbize:
+	rts
+
 
 ;=================================================
 ; write_labels
