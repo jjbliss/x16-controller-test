@@ -27,15 +27,7 @@ Y_POS2 = $16 ; also includes two extra bits from $17
 ;Sprite VRAM locations
 SPRITE_DATA = $10000
 
-A_BUTTON = 1 << 7
-B_BUTTON = 1 << 6
-SELECT_BUTTON = 1 << 5
-START_BUTTON = 1 << 4
 UP_BUTTON = 1 << 3
 DOWN_BUTTON = 1 << 2
 LEFT_BUTTON = 1 << 1
 RIGHT_BUTTON = 1
-
-;screen size
-SCREEN_WIDTH = 80
-SCREEN_HEIGHT = 60

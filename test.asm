@@ -234,8 +234,8 @@ write_y_pos2:
 
 ;=================================================
 ; write_controls
-;   This will write out the current status of
-;		JOY1 to the second line of the screen
+;   This will write out the current status the joystick
+;	as written in M0 to the screen
 ;-------------------------------------------------
 ; INPUTS:	M0 - joystatus
 ;			Z0 - line number
@@ -307,14 +307,12 @@ write_labels:
 printonline:
 	sta Z0
 	pha
-	lda #$20
-	sta VERA_addr_bank
+	+VERA_SET_ADDR 0, 2
 	lda Z0
-	sta VERA_addr_high
-	lda #0
-	sta VERA_addr_low
+	sta VERA_ADDR_MID
 	pla
 	rts
+
 
 ;=================================================
 ; clearscreen
@@ -330,39 +328,16 @@ printonline:
 clearscreen:
 	pha
 	lda #0
-	ldx #SCREEN_HEIGHT
-csloop:
-	cpx #0
-	beq csdone
-	sta Z4
-	stx Z3
-	jsr blankline
-	lda Z4
-	ldx Z3
-	dex
-	clc
-	adc #1
-	jmp csloop
-csdone:
-	pla
-	rts
-blankline:
+	+VERA_SET_ADDR 0, 2
+	lda #$20
 	sta Z0
-	pha
-	lda #$10
-	sta VERA_addr_bank
-	lda Z0
-	sta VERA_addr_high
-	lda #0
-	sta VERA_addr_low
-	ldx #0
-blloop: ;loop over each line
-	cpx #SCREEN_WIDTH
-	beq bldone
-	inx
-	+VERA_WRITE $20, $01 ;write character and color data
-	jmp blloop
-bldone:
+	+SYS_STREAM Z0, VERA_data, 7679
+
+	+VERA_SET_ADDR 1, 2
+	lda #$01
+	sta Z0
+	+SYS_STREAM Z0, VERA_data, 7679
+
 	pla
 	rts
 

@@ -9,14 +9,10 @@ VERA_INC=1
 ;-------------------------------------------------
 
 !addr {
-	!if MACHINE_C64 = 1 {
-		VERA_base = $df00
-	} else {
-		VERA_base = $9f20
-	}
-	VERA_addr_low   = VERA_base+0
-	VERA_addr_high  = VERA_base+1
-	VERA_addr_bank  = VERA_base+2
+	VERA_base = $9f20
+	VERA_ADDR_LO   = VERA_base+0
+	VERA_ADDR_MID  = VERA_base+1
+	VERA_ADDR_HI  = VERA_base+2
 	VERA_data       = VERA_base+3
 	VERA_data2      = VERA_base+4
 	VERA_ctrl       = VERA_base+5
@@ -84,11 +80,11 @@ VERA_INC=1
 ;
 !macro VERA_SET_ADDR .addr, .stride {
 	lda #<(.addr)
-	sta VERA_addr_low
+	sta VERA_ADDR_LO
 	lda #<(.addr >> 8)
-	sta VERA_addr_high
+	sta VERA_ADDR_MID
 	lda #<(.addr >> 16) | (.stride << 4)
-	sta VERA_addr_bank
+	sta VERA_ADDR_HI
 }
 
 !macro VERA_SET_ADDR .addr {
@@ -262,11 +258,11 @@ VERA_INC=1
 !macro VIDEO_INIT {
 	lda #0
 	sta VERA_ctrl ; set ADDR1 active
-	sta VERA_addr_high
+	sta VERA_ADDR_MID
 	lda #$14    ; $40040 - Composer output mode and chroma toggle
-	sta VERA_addr_bank
+	sta VERA_ADDR_HI
 	lda #$40
-	sta VERA_addr_low
+	sta VERA_ADDR_LO
 	lda #1
 	sta VERA_data ; VGA output
 }
