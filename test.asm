@@ -445,10 +445,10 @@ write_controls1:
 	sta Z5
 wc0:
 	lda JOY1
-	ldx #48
+	ldx #"1"
 	AND Z5
 	bne wc1
-	ldx #49
+	ldx #"0"
 wc1:
 	txa
 	sta VERA_data
@@ -459,16 +459,30 @@ wce:
 	sta Z5
 wc0h:
 	lda JOY1+1
-	ldx #48
+	ldx #"1"
 	AND Z5
 	bne wc1h
-	ldx #49
+	ldx #"0"
 wc1h:
 	txa
 	sta VERA_data
 	lsr Z5
 	bcc wc0h
 wceh:
+	lda #$80
+	sta Z5
+wc0b:
+	lda JOY1+2
+	ldx #"1"
+	AND Z5
+	bne wc1b
+	ldx #"0"
+wc1b:
+	txa
+	sta VERA_data
+	lsr Z5
+	bcc wc0b
+wceb:
 	pla
  	rts
 
@@ -480,10 +494,10 @@ write_controls2:
 	sta Z5
 wc20:
 	lda JOY2
-	ldx #48
+	ldx #"1"
 	AND Z5
 	bne wc21
-	ldx #49
+	ldx #"0"
 wc21:
 	txa
 	sta VERA_data
@@ -494,16 +508,30 @@ wc2e:
 	sta Z5
 wc20h:
 	lda JOY2+1
-	ldx #48
+	ldx #"1"
 	AND Z5
 	bne wc21h
-	ldx #49
+	ldx #"0"
 wc21h:
 	txa
 	sta VERA_data
 	lsr Z5
 	bcc wc20h
 wc2eh:
+	lda #$80
+	sta Z5
+wc20b:
+	lda JOY2+2
+	ldx #"1"
+	AND Z5
+	bne wc21b
+	ldx #"0"
+wc21b:
+	txa
+	sta VERA_data
+	lsr Z5
+	bcc wc20b
+wc2eb:
 	pla
  	rts
 
