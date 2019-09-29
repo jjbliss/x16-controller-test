@@ -3,6 +3,7 @@
 !src "vera.inc"
 !src "system.inc"
 !src "definitions.inc"
+!src "math.inc"
 *=$0801
 
 
@@ -22,15 +23,11 @@ setup:
 	+VERA_ENABLE_SPRITES
 	jsr clearscreen
 	jsr write_labels
-	lda #0
-	sta X_POS
-	sta X_POS+1
-	sta Y_POS
-	sta Y_POS+1
-	sta X_POS2
-	sta X_POS2+1
-	sta Y_POS2
-	sta Y_POS2+1
+
+	+SYS_ZERO X_POS, 2
+	+SYS_ZERO Y_POS, 2
+	+SYS_ZERO X_POS2, 2
+	+SYS_ZERO Y_POS2, 2
 
 	;setup Sprite
 	jsr create_sprite_entry
@@ -60,7 +57,6 @@ setup_done:
 irq_handler:
 	;check that this is a VSYNC interrupt
 	lda VERA_irq
-	!byte $FF
 	and #1 ;check that vsync bit is set
 	beq .vsync_end ; if vsync bit not set, skip to end
 	jsr GETJOY
@@ -95,26 +91,22 @@ handle_controls1:
 	lda JOY1
 	and #RIGHT_BUTTON ;check right
 	bne rbend
-	lda #1
-	jsr add_x_pos
+	+ADD_TO_16 X_POS, 1
 rbend:
 	lda JOY1
 	and #LEFT_BUTTON ;check right
 	bne lbend
-	lda #1
-	jsr sub_x_pos
+	+ADD_TO_16 X_POS, -1
 lbend:
 	lda JOY1
 	and #DOWN_BUTTON ;check down
 	bne dbend
-	lda #1
-	jsr add_y_pos
+	+ADD_TO_16 Y_POS, 1
 dbend:
 	lda JOY1
 	and #UP_BUTTON ;check down
 	bne ubend
-	lda #1
-	jsr sub_y_pos
+	+ADD_TO_16 Y_POS, -1
 ubend:
 	rts
 
@@ -123,26 +115,25 @@ handle_controls2:
 	lda JOY2
 	and #RIGHT_BUTTON ;check right
 	bne rbend2
-	lda #1
-	jsr add_x_pos2
+	+ADD_TO_16 X_POS2, 1
 rbend2:
 	lda JOY2
 	and #LEFT_BUTTON ;check right
 	bne lbend2
 	lda #1
-	jsr sub_x_pos2
+	+ADD_TO_16 X_POS2, -1
 lbend2:
 	lda JOY2
 	and #DOWN_BUTTON ;check down
 	bne dbend2
 	lda #1
-	jsr add_y_pos2
+	+ADD_TO_16 Y_POS2, 1
 dbend2:
 	lda JOY2
 	and #UP_BUTTON ;check down
 	bne ubend2
 	lda #1
-	jsr sub_y_pos2
+	+ADD_TO_16 Y_POS2, -1
 ubend2:
 	rts
 
@@ -193,237 +184,41 @@ copy_sprite_to_vram:
 ;
 update_sprite_pos:
 	+VERA_SET_ADDR VRAM_sprdata+2, 1
-	lda X_POS
-	sta VERA_data
-	lda X_POS+1
-	sta VERA_data
+	+SYS_STREAM_OUT X_POS, VERA_data, 2
 	+VERA_SET_ADDR VRAM_sprdata+4, 1
-	lda Y_POS
-	sta VERA_data
-	lda Y_POS+1
-	sta VERA_data
+	+SYS_STREAM_OUT Y_POS, VERA_data, 2
 	rts
 
 update_sprite_pos2:
 	+VERA_SET_ADDR VRAM_sprdata+8+2, 1
-	lda X_POS2
-	sta VERA_data
-	lda X_POS2+1
-	sta VERA_data
+	+SYS_STREAM_OUT X_POS2, VERA_data, 2
 	+VERA_SET_ADDR VRAM_sprdata+8+4, 1
-	lda Y_POS2
-	sta VERA_data
-	lda Y_POS2+1
-	sta VERA_data
+	+SYS_STREAM_OUT Y_POS2, VERA_data, 2
 	rts
 
-add_x_pos:
-	sta Z0
-	lda X_POS
-	clc
-	adc Z0
-	bcc axpe; if carry not set, go to end
-	sta X_POS
-	lda X_POS+1
-	clc
-	adc #1
-	sta X_POS+1
-	;check if X_POS+1 is greater than 3, if so, set all to 0
-	and #%11111100
-	beq axpe;if 0, then go to end
-	lda #0
-	sta X_POS
-	sta X_POS+1
-axpe:
-	sta X_POS
-	rts
-
-sub_x_pos:
-	sta Z0
-	lda X_POS
-	sec
-	sbc Z0
-	bcs sxpe1; if carry set, go to end
-	sta X_POS
-	lda X_POS+1
-	sec
-	sbc #1
-	bcs sxpe2; if carry still set, go to end, if not we need to loop
-	lda #%11
-	sta X_POS+1
-	jmp sxpef
-sxpe1:
-	sta X_POS
-	jmp sxpef
-sxpe2:
-	sta X_POS+1
-sxpef:
-	rts
-
-add_y_pos:
-	sta Z0
-	lda Y_POS
-	clc
-	adc Z0
-	bcc aype; if carry not set, go to end
-	sta Y_POS
-	lda Y_POS+1
-	clc
-	adc #1
-	sta Y_POS+1
-	;check if Y_POS+1 is greater than 3, if so, set all to 0
-	and #%11111100
-	beq aype;if 0, then go to end
-	lda #0
-	sta Y_POS
-	sta Y_POS+1
-aype:
-	sta Y_POS
-	rts
-
-sub_y_pos:
-	sta Z0
-	lda Y_POS
-	sec
-	sbc Z0
-	bcs sype1; if carry set, go to end
-	sta Y_POS
-	lda Y_POS+1
-	sec
-	sbc #1
-	bcs sype2; if carry still set, go to end, if not we need to loop
-	lda #%11
-	sta Y_POS+1
-	jmp sypef
-sype1:
-	sta Y_POS
-	jmp sypef
-sype2:
-	sta Y_POS+1
-sypef:
-	rts
 
 write_x_pos:
 	lda #4
 	jsr printonline
-	lda X_POS+1
-	sta VERA_data
-	lda X_POS
-	sta VERA_data
+	+SYS_STREAM_OUT X_POS, VERA_data, 2
 	rts
 
 write_y_pos:
 	lda #5
 	jsr printonline
-	lda Y_POS+1
-	sta VERA_data
-	lda Y_POS
-	sta VERA_data
-	rts
-
-
-add_x_pos2:
-	sta Z0
-	lda X_POS2
-	clc
-	adc Z0
-	bcc axpe2; if carry not set, go to end
-	sta X_POS2
-	lda X_POS2+1
-	clc
-	adc #1
-	sta X_POS2+1
-	;check if X_POS+1 is greater than 3, if so, set all to 0
-	and #%11111100
-	beq axpe2;if 0, then go to end
-	lda #0
-	sta X_POS2
-	sta X_POS2+1
-axpe2:
-	sta X_POS2
-	rts
-
-sub_x_pos2:
-	sta Z0
-	lda X_POS2
-	sec
-	sbc Z0
-	bcs sxpe12; if carry set, go to end
-	sta X_POS2
-	lda X_POS2+1
-	sec
-	sbc #1
-	bcs sxpe22; if carry still set, go to end, if not we need to loop
-	lda #%11
-	sta X_POS2+1
-	jmp sxpef2
-sxpe12:
-	sta X_POS2
-	jmp sxpef2
-sxpe22:
-	sta X_POS2+1
-sxpef2:
-	rts
-
-add_y_pos2:
-	sta Z0
-	lda Y_POS2
-	clc
-	adc Z0
-	bcc aype2; if carry not set, go to end
-	sta Y_POS2
-	lda Y_POS2+1
-	clc
-	adc #1
-	sta Y_POS2+1
-	;check if Y_POS+1 is greater than 3, if so, set all to 0
-	and #%11111100
-	beq aype2;if 0, then go to end
-	lda #0
-	sta Y_POS2
-	sta Y_POS2+1
-aype2:
-	sta Y_POS2
-	rts
-
-sub_y_pos2:
-	sta Z0
-	lda Y_POS2
-	sec
-	sbc Z0
-	bcs sype12; if carry set, go to end
-	sta Y_POS2
-	lda Y_POS2+1
-	sec
-	sbc #1
-	bcs sype22; if carry still set, go to end, if not we need to loop
-	lda #%11
-	sta Y_POS2+1
-	jmp sypef2
-sype12:
-	sta Y_POS2
-	jmp sypef2
-sype22:
-	sta Y_POS2+1
-sypef2:
+	+SYS_STREAM_OUT Y_POS, VERA_data, 2
 	rts
 
 write_x_pos2:
 	lda #8
 	jsr printonline
-	lda X_POS2+1
-	sta VERA_data
-	lda X_POS2
-	sta VERA_data
+	+SYS_STREAM_OUT X_POS2, VERA_data, 2
 	rts
 
 write_y_pos2:
 	lda #9
 	jsr printonline
-	lda Y_POS2+1
-	sta VERA_data
-	lda Y_POS2
-	sta VERA_data
+	+SYS_STREAM_OUT Y_POS2, VERA_data, 2
 	rts
 
 

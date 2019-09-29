@@ -149,6 +149,57 @@ HEADER_0801_IN_USE=1
         bne -
     }
 }
+
+;=================================================
+; SYS_ZERO
+;   Generic "zero a block of data at a given adress" macro
+;-------------------------------------------------
+; INPUTS:
+;           .dst    Destination address
+;           .size   Number of bytes to copy
+;
+;-------------------------------------------------
+; MODIFIES: A, X, Y, $FB-$FF
+;
+!macro SYS_ZERO .dst, .size {
+  lda #<.dst ;.dst to $FE $FD
+  sta $FD
+  lda #>.dst
+  sta $FE
+  !if .size > $FF {
+                  ; If we have at least 1 full page to copy, then include the
+                  ; page copy portion which needs a 5th byte to track the number
+                  ; of pages to copy.
+
+      lda #>.size ; number of pages to copy
+      sta $FF
+
+      ldy #$00 ; reset y for our loop
+
+-       lda #0 ;
+      sta ($FD),Y ; indirect index dest memory address
+      iny
+      bne -       ; loop until our dest goes over 255
+
+
+      inc $FE     ; increment high order dest memory address
+
+      dec $FF     ; decrement number of pages remaining
+      bne -       ; If we still have at least 1 page to copy, go back and copy it
+  }
+  !if <.size > 0 {
+                  ; If we're not copying exactly some number of pages, include
+                  ; the "copy the rest of it" section
+      ldy #0
+      ldx #<.size
+
+-       lda #0
+      sta ($FD),Y
+      iny
+      dex
+      bne -
+  }
+}
 ;=================================================
 ; SYS_STREAM_OUT
 ;   Copy a block of data starting at a source address,
