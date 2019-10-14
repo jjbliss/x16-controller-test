@@ -2,8 +2,8 @@
 DEFINITIONS_INC=1
 
 GETJOY =  $FF06
-JOY1 = $EF
-JOY2 = $F2
+JOY1 = $02BC
+JOY2 = $02BF
 
 ;ZeroPage registers
 ;assume that these are very volatile
