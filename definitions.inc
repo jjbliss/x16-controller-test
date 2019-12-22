@@ -1,9 +1,12 @@
 !ifdef DEFINITIONS_INC !eof
 DEFINITIONS_INC=1
 
-GETJOY =  $FF06
-JOY1 = $02BC
-JOY2 = $02BF
+;GETJOY =  $FF06
+;JOY1 = $02BC
+;JOY2 = $02BF
+joystick_scan =  $FF53
+joystick_get = $FF56
+
 
 ;ZeroPage registers
 ;assume that these are very volatile
@@ -13,6 +16,9 @@ Z2 = $02
 Z3 = $04
 Z4 = $05
 Z5 = $06
+
+JOY1_DATA = $50
+JOY2_DATA = $60
 
 ;32-bit data
 M0 = $30 ; 31, 33, 34

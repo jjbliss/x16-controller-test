@@ -59,15 +59,29 @@ irq_handler:
 	lda VERA_irq
 	and #1 ;check that vsync bit is set
 	beq .vsync_end ; if vsync bit not set, skip to end
-	jsr GETJOY
+	jsr joystick_scan
 
 	+SYS_ZERO M0, 4
 
-	+SYS_COPY JOY1, M0, 3
+	ldx #0
+	jsr joystick_get
+	sta M0
+	txa
+	sta M0+1
+	tya
+	sta M0+2
+	+SYS_COPY_3 M0, JOY1_DATA
 	lda #1
 	sta Z0
 	jsr write_controls
-	+SYS_COPY JOY2, M0, 3
+	ldx #1
+	jsr joystick_get
+	sta M0
+	txa
+	sta M0+1
+	tya
+	sta M0+2
+	+SYS_COPY_3 M0, JOY2_DATA
 	lda #2
 	sta Z0
 	jsr write_controls
@@ -98,22 +112,22 @@ irq_handler:
 ; MODIFIES: A, X, Y, X_POS, Y_POS
 ;
 handle_controls1:
-	lda JOY1
+	lda JOY1_DATA
 	and #RIGHT_BUTTON ;check right
 	bne rbend
 	+ADD_TO_16 X_POS, 1
 rbend:
-	lda JOY1
+	lda JOY1_DATA
 	and #LEFT_BUTTON ;check right
 	bne lbend
 	+ADD_TO_16 X_POS, -1
 lbend:
-	lda JOY1
+	lda JOY1_DATA
 	and #DOWN_BUTTON ;check down
 	bne dbend
 	+ADD_TO_16 Y_POS, 1
 dbend:
-	lda JOY1
+	lda JOY1_DATA
 	and #UP_BUTTON ;check down
 	bne ubend
 	+ADD_TO_16 Y_POS, -1
@@ -122,24 +136,24 @@ ubend:
 
 
 handle_controls2:
-	lda JOY2
+	lda JOY2_DATA
 	and #RIGHT_BUTTON ;check right
 	bne rbend2
 	+ADD_TO_16 X_POS2, 1
 rbend2:
-	lda JOY2
+	lda JOY2_DATA
 	and #LEFT_BUTTON ;check right
 	bne lbend2
 	lda #1
 	+ADD_TO_16 X_POS2, -1
 lbend2:
-	lda JOY2
+	lda JOY2_DATA
 	and #DOWN_BUTTON ;check down
 	bne dbend2
 	lda #1
 	+ADD_TO_16 Y_POS2, 1
 dbend2:
-	lda JOY2
+	lda JOY2_DATA
 	and #UP_BUTTON ;check down
 	bne ubend2
 	lda #1

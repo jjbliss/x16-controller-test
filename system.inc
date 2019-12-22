@@ -150,6 +150,21 @@ HEADER_0801_IN_USE=1
     }
 }
 
+!macro SYS_COPY_2 .src, .dst {
+	lda .src
+	sta .dst
+	lda .src+1
+	sta .dst+1
+}
+
+!macro SYS_COPY_3 .src, .dst {
+	lda .src
+	sta .dst
+	lda .src+1
+	sta .dst+1
+	lda .src+2
+	sta .dst+2
+}
 ;=================================================
 ; SYS_ZERO
 ;   Generic "zero a block of data at a given adress" macro
@@ -352,4 +367,28 @@ HEADER_0801_IN_USE=1
         dex
         bne -
     }
+}
+
+!macro BEQ_LONG .lbl {
+	bne .bel1
+	jmp	.lbl
+.bel1:
+}
+
+!macro BNE_LONG .lbl {
+	beq .bel1
+	jmp	.lbl
+.bel1:
+}
+
+!macro BCC_LONG .lbl {
+	bcs .bel1
+	jmp	.lbl
+.bel1:
+}
+
+!macro BCS_LONG .lbl {
+	bcc .bel1
+	jmp	.lbl
+.bel1:
 }

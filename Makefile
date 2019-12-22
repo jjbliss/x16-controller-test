@@ -6,6 +6,10 @@ test.prg: test.asm vera.inc
 run: all
 	../bin/x16emu -rom ../bin/rom.bin -prg test.prg -run -scale 2 -joy2 SNES
 
+
+run-nes: all
+	../bin/x16emu -rom ../bin/rom.bin -prg test.prg -run -scale 2 -joy1 NES
+
 run-2joy: all
 	../bin/x16emu -rom ../bin/rom.bin -prg test.prg -run -scale 2 -joy1 SNES -joy2 SNES
 
