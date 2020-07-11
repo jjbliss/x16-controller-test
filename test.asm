@@ -66,7 +66,7 @@ irq_handler:
 
 	+SYS_ZERO M0, 4
 
-	ldx #0
+	lda #0
 	jsr joystick_get
 	sta M0
 	txa
@@ -77,7 +77,7 @@ irq_handler:
 	lda #1
 	sta Z0
 	jsr write_controls
-	ldx #1
+	lda #1
 	jsr joystick_get
 	sta M0
 	txa
@@ -88,7 +88,7 @@ irq_handler:
 	lda #2
 	sta Z0
 	jsr write_controls
-	ldx #2
+	lda #2
 	jsr joystick_get
 	sta M0
 	txa
@@ -99,7 +99,7 @@ irq_handler:
 	lda #3
 	sta Z0
 	jsr write_controls
-	ldx #3
+	lda #3
 	jsr joystick_get
 	sta M0
 	txa
