@@ -17,11 +17,14 @@
 ;-------------------------------------------------
 setup:
 	;setup VERA
-	+VERA_RESET
-	jsr layer1_mode1
+	;+VERA_RESET
 	jsr composer_setup
-	+VERA_ENABLE_SPRITES
+	+LAYER_0_OFF
+	+LAYER_1_OFF
 	jsr clearscreen
+
+	jsr layer0_mode0
+	+VERA_ENABLE_SPRITES
 	jsr write_labels
 
 	+SYS_ZERO X_POS, 2
@@ -58,7 +61,7 @@ irq_handler:
 	;check that this is a VSYNC interrupt
 	lda VERA_irq
 	and #1 ;check that vsync bit is set
-	beq .vsync_end ; if vsync bit not set, skip to end
+	+BEQ_LONG .vsync_end ; if vsync bit not set, skip to end
 	jsr joystick_scan
 
 	+SYS_ZERO M0, 4
@@ -83,6 +86,28 @@ irq_handler:
 	sta M0+2
 	+SYS_COPY_3 M0, JOY2_DATA
 	lda #2
+	sta Z0
+	jsr write_controls
+	ldx #2
+	jsr joystick_get
+	sta M0
+	txa
+	sta M0+1
+	tya
+	sta M0+2
+	+SYS_COPY_3 M0, JOY3_DATA
+	lda #3
+	sta Z0
+	jsr write_controls
+	ldx #3
+	jsr joystick_get
+	sta M0
+	txa
+	sta M0+1
+	tya
+	sta M0+2
+	+SYS_COPY_3 M0, JOY4_DATA
+	lda #4
 	sta Z0
 	jsr write_controls
 
@@ -222,25 +247,25 @@ update_sprite_pos2:
 
 
 write_x_pos:
-	lda #4
+	lda #6
 	jsr printonline
 	+SYS_STREAM_OUT X_POS, VERA_data, 2
 	rts
 
 write_y_pos:
-	lda #5
+	lda #7
 	jsr printonline
 	+SYS_STREAM_OUT Y_POS, VERA_data, 2
 	rts
 
 write_x_pos2:
-	lda #8
+	lda #10
 	jsr printonline
 	+SYS_STREAM_OUT X_POS2, VERA_data, 2
 	rts
 
 write_y_pos2:
-	lda #9
+	lda #11
 	jsr printonline
 	+SYS_STREAM_OUT Y_POS2, VERA_data, 2
 	rts
@@ -323,7 +348,7 @@ printonline:
 	pha
 	+VERA_SET_ADDR 0, 2
 	lda Z0
-	sta VERA_ADDR_MID
+	sta VERA_addr_high
 	pla
 	rts
 
@@ -366,8 +391,12 @@ clearscreen:
 ;
 composer_setup: ;composor_setup_data is 9 bytes long
 	pha
-	+VERA_SET_ADDR VRAM_composer, 1;set vera address to the composer and set increment to 1
-	+SYS_STREAM_OUT composor_setup_data, VERA_data, 9; source, destination, size
+	;+VERA_SET_ADDR VRAM_composer, 1;set vera address to the composer and set increment to 1
+	;+SYS_STREAM_OUT composor_setup_data, VERA_data, 9; source, destination, size
+	+DC_SEL_0
+	+SYS_COPY composor_setup_data, VERA_DC, 4
+	+DC_SEL_1
+	+SYS_COPY composor_setup_data+4, VERA_DC, 4
 	pla
 	rts
 
@@ -380,10 +409,14 @@ composer_setup: ;composor_setup_data is 9 bytes long
 ;-------------------------------------------------
 ; MODIFIES:
 ;
-layer1_mode1: ;layer1_mode1_data is 10 bytes long
+layer0_mode0: ;layer1_mode1_data is 10 bytes long
 	pha
-	+VERA_SET_ADDR VRAM_layer1, 1;set vera address to layer1 and set increment to 1
-	+SYS_STREAM_OUT layer1_mode1_data, VERA_data, 9; source, destination, size
+	;+VERA_SET_ADDR VRAM_layer0, 1;set vera address to layer1 and set increment to 1
+	;+SYS_STREAM_OUT layer_mode0_data, VERA_data, 9; source, destination, size
+	+SYS_COPY layer_mode0_data, VERA_L0, 7
+
+	+LAYER_0_ON
+
 	pla
 	rts
 
@@ -397,10 +430,29 @@ layer1_mode1: ;layer1_mode1_data is 10 bytes long
 
 controlstring:
   !scr "byssudlraxlr"
+;composor_setup_data:;
+;	!byte 1, 128, 128, 14, 0, 128, 0, 224, 40
 composor_setup_data:
-	!byte 1, 128, 128, 14, 0, 128, 0, 224, 40
-layer1_mode1_data:
-	!byte 1, 6, 0, 0, 0, 124, 0, 0, 0, 0
+;	!byte 1, 64, 64, 0, 0, %10000000, 0, %11100000, (0 | (%10 << 2) | (%0 << 4) | (%1 << 5))
+	!byte 1;DC_VIDEO
+	!byte 128	;DC_HSCALE
+	!byte 128	;DC_VSCALE
+	!byte 0		;DC_BORDER
+	!byte 0 	;DC_HSTART
+	!byte %10100000	;DC_HSTOP
+	!byte 0	;DC_VSTART
+	!byte %11110000	;DC_VSTOP
+layer_mode0_data:
+	;!byte 1, %00000110, 0, 0, 0, 62, 0, 0, 0, 0
+	!byte %01100000;Config Map Height	Map Width	T256C	Bitmap Mode	Color Depth
+	!byte 0;MAPBASE
+	!byte %01111100;TILEBASE, TILEH, TILEW
+	!byte 0;H-SCROLL  -- Low
+	!byte 0;H-SCROLL  -- High
+	!byte 0;V-SCROLL  -- Low
+	!byte 0;V-SCROLL  -- High
+;layer1_mode1_data:
+;	!byte 1, 6, 0, 0, 0, 124, 0, 0, 0, 0
 irq_redirect:
   !byte $00, $00
 

@@ -10,15 +10,17 @@ joystick_get = $FF56
 
 ;ZeroPage registers
 ;assume that these are very volatile
-Z0 = $00
-Z1 = $01
-Z2 = $02
-Z3 = $04
-Z4 = $05
-Z5 = $06
+Z0 = $02
+Z1 = $03
+Z2 = $04
+Z3 = $05
+Z4 = $06
+Z5 = $07
 
 JOY1_DATA = $50
-JOY2_DATA = $60
+JOY2_DATA = $55
+JOY3_DATA = $60
+JOY4_DATA = $65
 
 ;32-bit data
 M0 = $30 ; 31, 33, 34
