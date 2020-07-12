@@ -18,7 +18,7 @@
 setup:
 	;setup VERA
 	;+VERA_RESET
-	jsr composer_setup
+	;jsr composer_setup
 	+LAYER_0_OFF
 	+LAYER_1_OFF
 	jsr clearscreen
@@ -31,10 +31,16 @@ setup:
 	+SYS_ZERO Y_POS, 2
 	+SYS_ZERO X_POS2, 2
 	+SYS_ZERO Y_POS2, 2
+	+SYS_ZERO X_POS3, 2
+	+SYS_ZERO Y_POS3, 2
+	+SYS_ZERO X_POS4, 2
+	+SYS_ZERO Y_POS4, 2
 
 	;setup Sprite
 	jsr create_sprite_entry
 	jsr create_sprite_entry2
+	jsr create_sprite_entry3
+	jsr create_sprite_entry4
 	jsr copy_sprite_to_vram
 
 	;setup IRQ
@@ -115,10 +121,18 @@ irq_handler:
 	jsr write_y_pos
 	jsr write_x_pos2
 	jsr write_y_pos2
+	jsr write_x_pos3
+	jsr write_y_pos3
+	jsr write_x_pos4
+	jsr write_y_pos4
 	jsr handle_controls1
 	jsr handle_controls2
+	jsr handle_controls3
+	jsr handle_controls4
 	jsr update_sprite_pos
 	jsr update_sprite_pos2
+	jsr update_sprite_pos3
+	jsr update_sprite_pos4
 	+VERA_END_IRQ
 	;;jmp to here if not VERA interrupt
 .vsync_end:
@@ -186,6 +200,58 @@ dbend2:
 ubend2:
 	rts
 
+handle_controls3:
+	lda JOY3_DATA
+	and #RIGHT_BUTTON ;check right
+	bne rbend3
+	+ADD_TO_16 X_POS3, 1
+rbend3:
+	lda JOY3_DATA
+	and #LEFT_BUTTON ;check right
+	bne lbend3
+	lda #1
+	+ADD_TO_16 X_POS3, -1
+lbend3:
+	lda JOY3_DATA
+	and #DOWN_BUTTON ;check down
+	bne dbend3
+	lda #1
+	+ADD_TO_16 Y_POS3, 1
+dbend3:
+	lda JOY3_DATA
+	and #UP_BUTTON ;check down
+	bne ubend3
+	lda #1
+	+ADD_TO_16 Y_POS3, -1
+ubend3:
+	rts
+
+handle_controls4:
+	lda JOY4_DATA
+	and #RIGHT_BUTTON ;check right
+	bne rbend4
+	+ADD_TO_16 X_POS4, 1
+rbend4:
+	lda JOY4_DATA
+	and #LEFT_BUTTON ;check right
+	bne lbend4
+	lda #1
+	+ADD_TO_16 X_POS4, -1
+lbend4:
+	lda JOY4_DATA
+	and #DOWN_BUTTON ;check down
+	bne dbend4
+	lda #1
+	+ADD_TO_16 Y_POS4, 1
+dbend4:
+	lda JOY4_DATA
+	and #UP_BUTTON ;check down
+	bne ubend4
+	lda #1
+	+ADD_TO_16 Y_POS4, -1
+ubend4:
+	rts
+
 ;=================================================
 ; create_sprite_entry
 ;   create an entry in the sprite index
@@ -204,6 +270,18 @@ create_sprite_entry:
 create_sprite_entry2:
 	;take sprite_data_entry and copy it into vera memory at VRAM_sprdata
 	+VERA_SET_ADDR VRAM_sprdata+8, 1;set vera address to the composer and set increment to 1
+	+SYS_STREAM_OUT sprite_data_entry, VERA_data, 8; source, destination, size
+	rts
+
+create_sprite_entry3:
+	;take sprite_data_entry and copy it into vera memory at VRAM_sprdata
+	+VERA_SET_ADDR VRAM_sprdata+16, 1;set vera address to the composer and set increment to 1
+	+SYS_STREAM_OUT sprite_data_entry, VERA_data, 8; source, destination, size
+	rts
+
+create_sprite_entry4:
+	;take sprite_data_entry and copy it into vera memory at VRAM_sprdata
+	+VERA_SET_ADDR VRAM_sprdata+24, 1;set vera address to the composer and set increment to 1
 	+SYS_STREAM_OUT sprite_data_entry, VERA_data, 8; source, destination, size
 	rts
 
@@ -245,6 +323,20 @@ update_sprite_pos2:
 	+SYS_STREAM_OUT Y_POS2, VERA_data, 2
 	rts
 
+update_sprite_pos3:
+	+VERA_SET_ADDR VRAM_sprdata+16+2, 1
+	+SYS_STREAM_OUT X_POS3, VERA_data, 2
+	+VERA_SET_ADDR VRAM_sprdata+16+4, 1
+	+SYS_STREAM_OUT Y_POS3, VERA_data, 2
+	rts
+
+update_sprite_pos4:
+	+VERA_SET_ADDR VRAM_sprdata+24+2, 1
+	+SYS_STREAM_OUT X_POS4, VERA_data, 2
+	+VERA_SET_ADDR VRAM_sprdata+24+4, 1
+	+SYS_STREAM_OUT Y_POS4, VERA_data, 2
+	rts
+
 
 write_x_pos:
 	lda #6
@@ -270,6 +362,30 @@ write_y_pos2:
 	+SYS_STREAM_OUT Y_POS2, VERA_data, 2
 	rts
 
+write_x_pos3:
+	lda #14
+	jsr printonline
+	+SYS_STREAM_OUT X_POS3, VERA_data, 2
+	rts
+
+write_y_pos3:
+	lda #15
+	jsr printonline
+	+SYS_STREAM_OUT Y_POS3, VERA_data, 2
+	rts
+
+
+write_x_pos4:
+	lda #18
+	jsr printonline
+	+SYS_STREAM_OUT X_POS4, VERA_data, 2
+	rts
+
+write_y_pos4:
+	lda #19
+	jsr printonline
+	+SYS_STREAM_OUT Y_POS4, VERA_data, 2
+	rts
 
 ;=================================================
 ; write_controls

@@ -31,6 +31,10 @@ X_POS = $10 ; also includes two extra bits from $11
 Y_POS = $12 ; also includes two extra bits from $13
 X_POS2 = $14 ; also includes two extra bits from $15
 Y_POS2 = $16 ; also includes two extra bits from $17
+X_POS3 = $18 ; also includes two extra bits from $19
+Y_POS3 = $1A ; also includes two extra bits from $1B
+X_POS4 = $1C ; also includes two extra bits from $1D
+Y_POS4 = $1E ; also includes two extra bits from $1F
 
 ;Sprite VRAM locations
 SPRITE_DATA = $10000
