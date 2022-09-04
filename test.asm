@@ -562,7 +562,7 @@ layer_mode0_data:
 	;!byte 1, %00000110, 0, 0, 0, 62, 0, 0, 0, 0
 	!byte %01100000;Config Map Height	Map Width	T256C	Bitmap Mode	Color Depth
 	!byte 0;MAPBASE
-	!byte %01111100;TILEBASE, TILEH, TILEW
+	!byte %11111000;TILEBASE, TILEH, TILEW
 	!byte 0;H-SCROLL  -- Low
 	!byte 0;H-SCROLL  -- High
 	!byte 0;V-SCROLL  -- Low
